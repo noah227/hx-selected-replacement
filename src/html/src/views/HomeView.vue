@@ -19,14 +19,13 @@
         </div>
         <div id="content-area">
             <Editor ref="refCodeOriginEditor" v-model="codeOrigin" language="javascript"></Editor>
-            <Editor ref="refCodeReplacedEditor" v-model="codeReplaced" language="javascript" readonly></Editor>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
 import {getHBuilderX} from "@/hx/index"
-import {computed, nextTick, onMounted, ref, shallowRef, watch} from "vue";
+import {nextTick, onMounted, ref, shallowRef, watch} from "vue";
 import "raw-beautify/dist/default/input.css"
 import Editor from "./Editor.vue"
 import {TFilter} from "@/views/Home";
@@ -59,23 +58,7 @@ const filter = ref<TFilter>({
     caseSensitive: false
 })
 const refCodeOriginEditor = shallowRef()
-const refCodeReplacedEditor = shallowRef()
-const codeOrigin = ref("console.log(999999)")
-const codeReplaced = computed(() => {
-    const {searchContent, replacement} = filter.value
-    if (searchContent && replacement) {
-        const {useRegex, caseSensitive} = filter.value
-        if (useRegex) {
-            const flagList: string[] = []
-            if (!caseSensitive) flagList.push("i")
-            flagList.push("g")
-            console.log(new RegExp(searchContent, flagList.join("")))
-            return codeOrigin.value.replaceAll(new RegExp(searchContent, flagList.join("")), replacement)
-        }
-        return codeOrigin.value.replaceAll(searchContent, replacement)
-    }
-    return codeOrigin.value
-})
+const codeOrigin = ref("console.log(999999, 'Excellent!')")
 watch(() => filter.value, () => {
     updateHighlight()
 }, {deep: true})
@@ -89,7 +72,6 @@ const updateHighlight = () => {
 }
 
 onMounted(() => {
-    // registerDocumentKeyEvents()
     nextTick(() => {
         window.addEventListener('hbuilderxReady', () => {
             initMessage()

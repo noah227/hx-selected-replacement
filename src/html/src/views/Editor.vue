@@ -6,9 +6,9 @@
 
 <script lang="ts" setup>
 import * as monaco from "monaco-editor"
-import {editor} from "monaco-editor"
+import {editor, Range} from "monaco-editor"
 import {computed, onMounted, ref, shallowRef, watch} from "vue";
-import {TFilter} from "@/views/Home";
+import {createRegexFlags, TFilter} from "@/views/Home";
 import FindMatch = editor.FindMatch;
 import IEditorDecorationsCollection = editor.IEditorDecorationsCollection;
 
@@ -107,28 +107,47 @@ defineExpose({
         // console.log(domNode)
         editorDecorations.value?.clear()
         matchAndHighlight({searchContent, replacement, useRegex, caseSensitive})
-        // 替换区
-        if(props.readonly && replacement) {
-
-        }
     }
 })
 
-const matchAndHighlight = ({searchContent: searchStr, replacement, useRegex, caseSensitive}: TFilter) => {
-    const matches = refMonacoInstance.value.getModel().findMatches(searchStr, true, useRegex, caseSensitive) as FindMatch[]
-    // console.log(matches)
-    matches.forEach(({range}) => {
-        const {startColumn, startLineNumber, endColumn, endLineNumber} = range
-        console.log(range)
-        editorDecorations.value = refMonacoInstance.value.createDecorationsCollection([
-            {
-                range: new monaco.Range(startLineNumber, startColumn, endLineNumber, endColumn),
-                options: {
-                    inlineClassName: "search-str-matched"
+// 主要是检测下regex是否合法
+const prepareMatch = ({searchContent, useRegex}: TFilter) => new Promise((resolve, reject) => {
+    try {
+        (!useRegex || new RegExp(searchContent)) && resolve(true)
+    } catch (e) {
+
+    }
+})
+
+const matchAndHighlight = (filter: TFilter) => {
+    const {searchContent: searchStr, replacement, useRegex, caseSensitive} = filter
+    prepareMatch(filter).then(() => {
+        const matches = refMonacoInstance.value.getModel().findMatches(searchStr, true, useRegex, caseSensitive) as FindMatch[]
+        console.log(matches)
+        matches.forEach(({range}) => {
+            const {startColumn, startLineNumber, endColumn, endLineNumber} = range
+            editorDecorations.value = refMonacoInstance.value.createDecorationsCollection([
+                {
+                    range: new monaco.Range(startLineNumber, startColumn, endLineNumber, endColumn),
+                    options: {
+                        inlineClassName: replacement ? "search-str-matched in-replace-mode" : "search-str-matched",
+                        // linesDecorationsTooltip: replacement ? createTooltip(range, filter) : "",
+                        after: replacement ? {
+                            content: createMatchedAfterContent(range, filter),
+                            inlineClassName: "search-str-matched--after"
+                        } : undefined,
+                    }
                 }
-            }
-        ])
+            ])
+        })
     })
+}
+
+const createMatchedAfterContent = (range: Range, {searchContent, replacement, useRegex, caseSensitive}: TFilter) => {
+    const content = refMonacoInstance.value.getModel().getValueInRange(range)
+    const replaced = content.replaceAll(new RegExp(searchContent, createRegexFlags({caseSensitive})), replacement)
+    console.log(content, replaced, "<<<<<<<<<")
+    return replaced
 }
 
 onMounted(() => {
@@ -153,5 +172,18 @@ onMounted(() => {
 
 .search-str-matched {
     background-color: yellow;
+
+    &.in-replace-mode {
+        text-decoration: line-through;
+    }
+}
+
+/* 如果需要自然也是可以通过position设置成tooltip样式的 */
+.search-str-matched--after {
+    background-color: #999;
+    color: #fff !important;
+    border-radius: 3px;
+    padding: 0 3px;
+    margin: 0 3px;
 }
 </style>
