@@ -1,51 +1,51 @@
 {
-	"id": "noahyoung-hx-selected-replacement",
-	"name": "hx-selected-replacement",
-	"description": "your extension description",
-	"displayName": "选区替换",
-	"version": "0.0.0",
-	"publisher": "Noah Young",
-	"engines": {
-		"HBuilderX": "^2.7.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"main": "./extension",
-	"activationEvents": [
-		"onCommand:extension.replaceSelected"
-	],
-	"contributes": {
-		"commands": [
-			{
-				"command": "extension.replaceSelected",
-				"title": "Hello World"
-			}
-		],
-		"menus": {
-			"editor/context": [
-				{
-					"command": "extension.replaceSelected",
-					"group": "z_commands",
-					"when": "editorTextFocus"
-				},
-				{
-					"group": "z_commands"
-				}
-			]
-		},
-		"keybindings": [
-			{
-				"key": "Ctrl+Shift+R",
-				"command": "extension.replaceSelected",
-				"when": "editorTextFocus"
-			}
-		]
-	},
-	"extensionDependencies": [
-		"plugin-manager"
-	],
-	"dependencies": {
-		"hx-vue-dist-loader": "^1.0.5"
-	}
+    "id": "noahyoung-hx-selected-replacement",
+    "name": "hx-selected-replacement",
+    "description": "your extension description",
+    "displayName": "选区替换",
+    "version": "0.0.0",
+    "publisher": "Noah Young",
+    "engines": {
+        "HBuilderX": "^2.7.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "main": "./extension",
+    "activationEvents": [
+        "onCommand:extension.replaceSelected"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.replaceSelected",
+                "title": "选区替换"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "extension.replaceSelected",
+                    "group": "z_commands",
+                    "when": "editorTextFocus"
+                },
+                {
+                    "group": "z_commands"
+                }
+            ]
+        },
+        "keybindings": [
+            {
+                "key": "Ctrl+Shift+R",
+                "command": "extension.replaceSelected",
+                "when": "editorTextFocus"
+            }
+        ]
+    },
+    "extensionDependencies": [
+        "plugin-manager"
+    ],
+    "dependencies": {
+        "hx-vue-dist-loader": "^1.2.5"
+    }
 }

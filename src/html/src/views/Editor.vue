@@ -31,8 +31,14 @@ const _value = ref(props.modelValue)
 
 watch(() => props.modelValue, v => {
     if (!refMonacoInstance.value) return
+    clearDecorations()
     refMonacoInstance.value.setValue(v)
 })
+
+watch(() => props.language, lang => {
+    refMonacoInstance.value.updateOptions({language: lang})
+})
+
 watch(() => _value.value, v => {
     if (props.readonly) return
     emits("update:modelValue", v)
@@ -74,6 +80,7 @@ const initEditor = () => {
     })
     // 编辑器变化事件监听
     refMonacoInstance.value.onDidChangeModelContent(() => {
+        console.log("CHANGE")
         getEditorValue().then((v) => {
             if (typeof v === "string") _value.value = v
         }).catch(e => console.error(e))
@@ -96,7 +103,7 @@ const initEditor = () => {
     refMonacoInstance.value.focus()
 }
 
-const editorDecorations = shallowRef<IEditorDecorationsCollection>()
+const editorDecorations = shallowRef<IEditorDecorationsCollection[]>([])
 
 defineExpose({
     setValue(value: string) {
@@ -105,10 +112,16 @@ defineExpose({
     updateHighlight({searchContent, replacement, useRegex, caseSensitive}: TFilter) {
         // const domNode = refMonaco.value.getOriginalEditor().getDomNode
         // console.log(domNode)
-        editorDecorations.value?.clear()
+        clearDecorations()
         matchAndHighlight({searchContent, replacement, useRegex, caseSensitive})
     }
 })
+
+const clearDecorations = () => {
+    editorDecorations.value.forEach(editorDecoration => {
+        editorDecoration.clear()
+    })
+}
 
 // 主要是检测下regex是否合法
 const prepareMatch = ({searchContent, useRegex}: TFilter) => new Promise((resolve, reject) => {
@@ -126,19 +139,21 @@ const matchAndHighlight = (filter: TFilter) => {
         console.log(matches)
         matches.forEach(({range}) => {
             const {startColumn, startLineNumber, endColumn, endLineNumber} = range
-            editorDecorations.value = refMonacoInstance.value.createDecorationsCollection([
-                {
-                    range: new monaco.Range(startLineNumber, startColumn, endLineNumber, endColumn),
-                    options: {
-                        inlineClassName: replacement ? "search-str-matched in-replace-mode" : "search-str-matched",
-                        // linesDecorationsTooltip: replacement ? createTooltip(range, filter) : "",
-                        after: replacement ? {
-                            content: createMatchedAfterContent(range, filter),
-                            inlineClassName: "search-str-matched--after"
-                        } : undefined,
+            editorDecorations.value.push(
+                refMonacoInstance.value.createDecorationsCollection([
+                    {
+                        range: new monaco.Range(startLineNumber, startColumn, endLineNumber, endColumn),
+                        options: {
+                            inlineClassName: replacement ? "search-str-matched in-replace-mode" : "search-str-matched",
+                            // linesDecorationsTooltip: replacement ? createTooltip(range, filter) : "",
+                            after: replacement ? {
+                                content: createMatchedAfterContent(range, filter),
+                                inlineClassName: "search-str-matched--after"
+                            } : undefined,
+                        }
                     }
-                }
-            ])
+                ])
+            )
         })
     })
 }
@@ -160,8 +175,6 @@ onMounted(() => {
 @import "common.variables";
 
 .editor {
-    height: 0;
-    margin: 1rem 0;
     border: 1px solid $border-color;
 }
 
