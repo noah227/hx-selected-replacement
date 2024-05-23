@@ -1,0 +1,157 @@
+<template>
+    <div ref="refMonaco" class="editor">
+
+    </div>
+</template>
+
+<script lang="ts" setup>
+import * as monaco from "monaco-editor"
+import {editor} from "monaco-editor"
+import {computed, onMounted, ref, shallowRef, watch} from "vue";
+import {TFilter} from "@/views/Home";
+import FindMatch = editor.FindMatch;
+import IEditorDecorationsCollection = editor.IEditorDecorationsCollection;
+
+
+const props = defineProps({
+    modelValue: {
+        type: String,
+        required: true
+    },
+    language: {
+        type: String,
+        required: true
+    },
+    readonly: Boolean
+})
+
+const emits = defineEmits(["update:modelValue", "save"])
+
+const _value = ref(props.modelValue)
+
+watch(() => props.modelValue, v => {
+    if (!refMonacoInstance.value) return
+    refMonacoInstance.value.setValue(v)
+})
+watch(() => _value.value, v => {
+    if (props.readonly) return
+    emits("update:modelValue", v)
+})
+
+const refMonaco = shallowRef()
+const refMonacoInstance = shallowRef()
+
+const tid = ref<any>(0)
+const getEditorValue = () => new Promise((resolve, reject) => {
+    clearTimeout(tid.value)
+    tid.value = setTimeout(() => resolve(refMonacoInstance.value.getValue()), 500)
+})
+
+const editorOptions = computed(() => ({
+    value: _value.value,
+    language: props.language,
+    automaticLayout: true,
+    autoFocus: true,
+    minimap: {enabled: false},
+    locale: "zh_CN",
+    readOnly: props.readonly
+    // theme: "vs-dark"
+}))
+
+/**
+ * 动态同步Editor的语言设置
+ */
+watch(() => editorOptions.value.language, language => {
+    if (!refMonacoInstance.value) return
+    const model = refMonacoInstance.value.getModel()
+    model.setLanguage(language)
+})
+
+const initEditor = () => {
+    // 默认格式化快捷键alt+shift+f todo 似乎内置没有css语法提示
+    refMonacoInstance.value = monaco.editor.create(refMonaco.value, {
+        ...editorOptions.value
+    })
+    // 编辑器变化事件监听
+    refMonacoInstance.value.onDidChangeModelContent(() => {
+        getEditorValue().then((v) => {
+            if (typeof v === "string") _value.value = v
+        }).catch(e => console.error(e))
+    })
+    const keyBindingList = [
+        // 格式化
+        [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyL, "editor.action.format"],
+        // 换行
+        [monaco.KeyMod.Shift | monaco.KeyCode.Enter, "editor.action.insertLineAfter"],
+        // 删除行
+        [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyY, "editor.action.deleteLines"],
+        // 复制
+        [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, "editor.action.duplicateSelection"]
+    ]
+    keyBindingList.forEach(([k, action]) => {
+        refMonacoInstance.value.addCommand(k, () => {
+            refMonacoInstance.value.trigger("", action)
+        })
+    })
+    refMonacoInstance.value.focus()
+}
+
+const editorDecorations = shallowRef<IEditorDecorationsCollection>()
+
+defineExpose({
+    setValue(value: string) {
+        refMonacoInstance.value.setValue(value)
+    },
+    updateHighlight({searchContent, replacement, useRegex, caseSensitive}: TFilter) {
+        // const domNode = refMonaco.value.getOriginalEditor().getDomNode
+        // console.log(domNode)
+        editorDecorations.value?.clear()
+        matchAndHighlight({searchContent, replacement, useRegex, caseSensitive})
+        // 替换区
+        if(props.readonly && replacement) {
+
+        }
+    }
+})
+
+const matchAndHighlight = ({searchContent: searchStr, replacement, useRegex, caseSensitive}: TFilter) => {
+    const matches = refMonacoInstance.value.getModel().findMatches(searchStr, true, useRegex, caseSensitive) as FindMatch[]
+    // console.log(matches)
+    matches.forEach(({range}) => {
+        const {startColumn, startLineNumber, endColumn, endLineNumber} = range
+        console.log(range)
+        editorDecorations.value = refMonacoInstance.value.createDecorationsCollection([
+            {
+                range: new monaco.Range(startLineNumber, startColumn, endLineNumber, endColumn),
+                options: {
+                    inlineClassName: "search-str-matched"
+                }
+            }
+        ])
+    })
+}
+
+onMounted(() => {
+    initEditor()
+})
+</script>
+
+<style lang="scss">
+@import "common";
+@import "common.variables";
+
+.editor {
+    height: 0;
+    margin: 1rem 0;
+    border: 1px solid $border-color;
+}
+
+.margin:first-child {
+    border-right: 1px solid $border-color;
+    box-sizing: border-box;
+}
+
+.search-str-matched {
+    background-color: yellow;
+}
+</style>
