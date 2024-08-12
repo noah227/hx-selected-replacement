@@ -26,11 +26,8 @@
             "editor/context": [
                 {
                     "command": "extension.replaceSelected",
-                    "group": "z_commands",
+                    "group": "copy",
                     "when": "editorTextFocus"
-                },
-                {
-                    "group": "z_commands"
                 }
             ]
         },
