@@ -22,8 +22,8 @@ const showView = () => {
     let selection = null
     webview.onDidReceiveMessage((msg) => {
         let action = msg.command
-        console.log(action)
         let data = msg.data
+        console.log(action, data)
         const activeEditor = hx.window.getActiveTextEditor()    
         switch (action) {
             case "close":

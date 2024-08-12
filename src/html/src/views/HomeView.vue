@@ -66,7 +66,7 @@ const updateHighlight = () => {
 
 const getCodeReplaced = (replaceAll = false) => {
     const {searchContent, replacement} = filter.value
-    if (searchContent && replacement) {
+    if (searchContent) {
         const {useRegex, caseSensitive} = filter.value
         if (useRegex) {
             const flagList: string[] = []
