@@ -2,15 +2,27 @@ const hx = require("hbuilderx")
 const Html = require('./html.js')
 const path = require("path")
 
+const pkgId = require("../package.json").id
+
+const storeWindowSize = (webWidth, webHeight) => {
+    hx.workspace.getConfiguration(pkgId).update("dialogSize", [webWidth + 40 * 2, webHeight + 99 + 73])
+}
+const getWindowSize = () => {
+    const dialogSize = hx.workspace.getConfiguration(pkgId).get("dialogSize")
+    const [width, height] = dialogSize || [820, 600]
+    return [width < 720 ? 720 : width, height < 480 ? 480 : height]
+}
+
 const showView = () => {
+    const [width, height] = getWindowSize()
     let dialog = hx.window.createWebViewDialog({
         modal: true,
         title: "内容替换",
         description: "替换内容，支持正则",
         dialogButtons: ["关闭"],
         size: {
-            width: 820,
-            height: 600
+            width,
+            height
         }
     }, {
         enableScripts: true
@@ -43,7 +55,6 @@ const showView = () => {
                     const language = editor.document.languageId
                     console.log(">>>", language)
                     selection = editor.selection
-                    console.log(selection, "<SSSSSS")
                     const text = editor.document.getText(selection)
                     webview.postMessage({
                         command: "resFetchContent",
@@ -65,7 +76,7 @@ const showView = () => {
                             // 延迟设置，类似vue nextTick的效果，等待编辑窗口内容更新后再更新光标位置
                             // 实例要重新获取
                             hx.window.getActiveTextEditor().then(e => {
-                                e.setSelection(active + text.length, active + text.length) 
+                                e.setSelection(active + text.length, active + text.length)
                                 webview.postMessage({
                                     command: "resConfirmReplacement",
                                     data: {language, text}
@@ -74,6 +85,10 @@ const showView = () => {
                         }, 0)
                     })
                 })
+                break
+            case "syncConfig":
+                console.log(">>>SYNC Config")
+                storeWindowSize(data.width, data.height)
                 break
             default:
                 break

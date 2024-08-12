@@ -90,6 +90,20 @@ const confirmReplacement = (replaceAll = false) => {
     })
 }
 
+const syncTid = ref<any>(0)
+// 这里只sync了size，所以直接在这里写了
+const syncConfig = () => {
+    syncTid.value && clearTimeout(syncTid.value)
+    syncTid.value = setTimeout(() => {
+        getHBuilderX().postMessage({
+            command: "syncConfig",
+            data: {
+                width: window.innerWidth,
+                height: window.innerHeight
+            }
+        })
+    }, 200)
+}
 
 /************************* HBuilderX 部分的内容 *************************/
 
@@ -109,7 +123,6 @@ const initMessage = () => {
                 })
             }
         } else {
-            console.log("PROCESS COMMAND")
             switch (msg.command) {
                 case "resInitEnvInfo":
                     htmlRoot.value = data.htmlRoot || ""
@@ -140,7 +153,7 @@ const initEnvInfo = () => {
 }
 
 
-const readyToRender = ref(true)
+const readyToRender = ref(false)
 /**
  * 示例通信：获取编辑器中选择的文本
  */
@@ -162,6 +175,7 @@ onMounted(() => {
                 initEnvInfo()
             }, 0)
         })
+        window.addEventListener("resize", () => syncConfig())
     })
 })
 
