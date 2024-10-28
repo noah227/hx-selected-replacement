@@ -2,8 +2,8 @@
     <div id="home" v-if="readyToRender">
         <div id="controls">
             <div id="input-area">
-                <input v-model="filter.searchContent" type="text" placeholder="搜索"/>
-                <input v-model="filter.replacement" type="text" placeholder="替换内容"/>
+                <input v-model="filter.searchContent" type="text" placeholder="搜索" @keydown.enter="confirmReplacement(false)"/>
+                <input v-model="filter.replacement" type="text" placeholder="替换内容" @keydown.enter="confirmReplacement(false)"/>
             </div>
             <div id="splitter"></div>
             <div id="filter-area">
@@ -19,7 +19,7 @@
                 </div>
                 <div></div>
                 <div>
-                    <button @click="confirmReplacement(false)">替换</button>
+                    <button @click="confirmReplacement(false)" title="Enter">替换</button>
                     <button @click="confirmReplacement(true)">全部替换</button>
                 </div>
             </div>
@@ -72,8 +72,8 @@ const getCodeReplaced = (replaceAll = false) => {
             const flagList: string[] = []
             if (!caseSensitive) flagList.push("i")
             if (replaceAll) flagList.push("g")
-            console.log(new RegExp(searchContent, flagList.join("")))
-            return codeOrigin.value.replace(new RegExp(searchContent, flagList.join("")), replacement)
+            const reg = new RegExp(searchContent, flagList.join(""))
+            return codeOrigin.value.replace(reg, replacement)
         }
         return replaceAll ? codeOrigin.value.replaceAll(searchContent, replacement) : codeOrigin.value.replace(searchContent, replacement)
     }

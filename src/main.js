@@ -53,7 +53,6 @@ const showView = () => {
             case "fetchContent":
                 activeEditor.then((editor) => {
                     const language = editor.document.languageId
-                    console.log(">>>", language)
                     selection = editor.selection
                     const text = editor.document.getText(selection)
                     webview.postMessage({
