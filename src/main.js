@@ -63,22 +63,25 @@ const showView = () => {
                 break
             case "confirm-replacement":
                 activeEditor.then((editor) => {
-                    // todo第一次操作的selection要提前存下来，而不是从这里取
-                    console.log("FDSFSFSDFS", selection)
                     editor.edit((editBuilder) => {
                         const text = data.replaced
                         editBuilder.replace(selection, text)
                         // 光标位置后移
                         const {active, anchor, start, end} = selection
                         const language = editor.document.languageId
+                        let setActive, setAnchor
+                        // 光标在锚点右侧，则光标偏移
+                        if(active >= anchor) [setAnchor, setActive] = [anchor, active + text.length]
+                        // 否则，锚点偏移
+                        else [setActive, setAnchor] = [active, anchor + text.length]
                         setTimeout(() => {
                             // 延迟设置，类似vue nextTick的效果，等待编辑窗口内容更新后再更新光标位置
                             // 实例要重新获取
                             hx.window.getActiveTextEditor().then(e => {
-                                e.setSelection(active + text.length, active + text.length)
+                                // e.setSelection(active + text.length, active + text.length)
+                                e.setSelection(setActive, setAnchor)
                                 webview.postMessage({
-                                    command: "resConfirmReplacement",
-                                    data: {language, text}
+                                    command: "resConfirmReplacement"
                                 })
                             })
                         }, 0)

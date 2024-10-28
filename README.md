@@ -10,8 +10,6 @@
 > 注：gif录制出现像素丢失了，顶部输入控制那块有完整的背景色
 > 要撤销操作，关闭对话框，回到编辑区正常Ctrl+Z即可
 
-bug: 连续替换出错，因为文档dirty，选区位置识别错误吗？（测不出来这个问题了...）
-
 ## 参考
 
 * [着色#example-interacting-with-the-editor-line-and-inline-decorations](https://microsoft.github.io/monaco-editor/playground.html?source=v0.48.0#example-interacting-with-the-editor-line-and-inline-decorations)

@@ -137,8 +137,7 @@ const initMessage = () => {
                     })
                     break
                 case "resConfirmReplacement":
-                    language.value = data.language || ""
-                    codeOrigin.value = data.text || ""
+                    fetchContent()
                     break
 
             }
