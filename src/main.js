@@ -78,7 +78,6 @@ const showView = () => {
                             // 延迟设置，类似vue nextTick的效果，等待编辑窗口内容更新后再更新光标位置
                             // 实例要重新获取
                             hx.window.getActiveTextEditor().then(e => {
-                                // e.setSelection(active + text.length, active + text.length)
                                 e.setSelection(setActive, setAnchor)
                                 webview.postMessage({
                                     command: "resConfirmReplacement"
