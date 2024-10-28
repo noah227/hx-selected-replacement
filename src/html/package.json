@@ -9,9 +9,10 @@
     },
     "dependencies": {
         "core-js": "^3.8.3",
+        "escape-string-regexp": "^5.0.0",
         "monaco-editor": "^0.48.0",
         "monaco-editor-webpack-plugin": "^7.1.0",
-        "raw-beautify": "^1.0.1",
+        "raw-beautify": "github:noah227/raw-beautify",
         "vue": "^3.2.13",
         "vue-router": "^4.0.3"
     },

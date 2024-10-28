@@ -37,6 +37,7 @@ import "raw-beautify/dist/default/input.css"
 import "raw-beautify/dist/default/button.css"
 import Editor from "./Editor.vue"
 import {TFilter} from "@/views/Home";
+import escapeStringRegexp from "escape-string-regexp"
 
 const filter = ref<TFilter>({
     searchContent: "",
@@ -68,14 +69,13 @@ const getCodeReplaced = (replaceAll = false) => {
     const {searchContent, replacement} = filter.value
     if (searchContent) {
         const {useRegex, caseSensitive} = filter.value
-        if (useRegex) {
-            const flagList: string[] = []
-            if (!caseSensitive) flagList.push("i")
-            if (replaceAll) flagList.push("g")
-            const reg = new RegExp(searchContent, flagList.join(""))
-            return codeOrigin.value.replace(reg, replacement)
-        }
-        return replaceAll ? codeOrigin.value.replaceAll(searchContent, replacement) : codeOrigin.value.replace(searchContent, replacement)
+        
+        const flagList: string[] = []
+        if (!caseSensitive) flagList.push("i")
+        if (replaceAll) flagList.push("g")
+        const reg = new RegExp(useRegex ? searchContent : escapeStringRegexp(searchContent), flagList.join(""))
+        
+        return codeOrigin.value.replace(reg, replacement)
     }
     return codeOrigin.value
 }
