@@ -1,5 +1,5 @@
 {
-    "id": "noahyoung-hx-selected-replacement",
+    "id": "hx-selected-replacement",
     "name": "hx-selected-replacement",
     "description": "your extension description",
     "displayName": "选区替换",
@@ -12,6 +12,10 @@
         "Other"
     ],
     "main": "./extension",
+    "scripts": {
+        "build:html": "cd ./src/html && npm run build",
+        "pack": "node hx-pack.js"
+    },
     "activationEvents": [
         "onCommand:extension.replaceSelected"
     ],
@@ -44,5 +48,8 @@
     ],
     "dependencies": {
         "hx-vue-dist-loader": "^1.2.5"
+    },
+    "devDependencies": { 
+        "cozip": "^0.1.1"
     }
 }
