@@ -81,7 +81,7 @@ const getCodeReplaced = (replaceAll = false) => {
 }
 
 const confirmReplacement = (replaceAll = false) => {
-    console.log(getCodeReplaced(replaceAll))
+    // console.log(getCodeReplaced(replaceAll))
     getHBuilderX().postMessage({
         command: "confirm-replacement",
         data: {

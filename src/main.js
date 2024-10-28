@@ -26,7 +26,7 @@ const showView = () => {
         }
     }, {
         enableScripts: true
-    })
+    }) 
 
     const webview = dialog.webView
     webview.html = Html()
@@ -35,7 +35,7 @@ const showView = () => {
     webview.onDidReceiveMessage((msg) => {
         let action = msg.command
         let data = msg.data
-        console.log(action, data)
+        // console.log(action, data)
         const activeEditor = hx.window.getActiveTextEditor()    
         switch (action) {
             case "close":
@@ -66,14 +66,22 @@ const showView = () => {
                     editor.edit((editBuilder) => {
                         const text = data.replaced
                         editBuilder.replace(selection, text)
-                        // 光标位置后移
-                        const {active, anchor, start, end} = selection
+                        console.log(selection, "<<<<")
+                        // 重设选区（起始始终固定，结尾偏移）
+                        let {active, anchor, start, end} = selection
                         const language = editor.document.languageId
                         let setActive, setAnchor
-                        // 光标在锚点右侧，则光标偏移
-                        if(active >= anchor) [setAnchor, setActive] = [anchor, active + text.length]
-                        // 否则，锚点偏移
-                        else [setActive, setAnchor] = [active, anchor + text.length]
+                        // 光标在锚点右侧，以锚点为基准计算光标位置
+                        if(active >= anchor) {
+                            [setAnchor, setActive] = [anchor, anchor + text.length];
+                            [start, end] = [setAnchor, setActive]
+                        }
+                        // 反之，以光标为基准计算锚点位置
+                        else {
+                            [setActive, setAnchor] = [active, active + text.length];
+                            [start, end] = [setActive, setAnchor]
+                        }
+                        selection = {...selection, start, end, active: setActive, anchor: setAnchor}
                         setTimeout(() => {
                             // 延迟设置，类似vue nextTick的效果，等待编辑窗口内容更新后再更新光标位置
                             // 实例要重新获取
